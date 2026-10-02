@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Foneembewustzijn - Slakkentaal 🐌</title>
+  <style>
+    :root {
+      --primary: #ff9f43;
+      --primary-hover: #ee5253;
+      --bg-color: #f0f8ff;
+      --card-bg: #ffffff;
+      --correct: #10ac84;
+      --fout-kleur: #ff7675;
+      --accent: #2e86de;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      margin: 0;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: #2c3e50;
+      margin: 10px 0 20px 0;
+      font-size: 1.8rem;
+      text-align: center;
+    }
+
+    /* Schermen beheren */
+    .scherm {
+      width: 100%;
+      max-width: 700px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* 1. STARTPAGINA */
+    .thema-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      width: 100%;
+      margin-top: 15px;
+    }
+
+    .btn-start-thema {
+      background: white;
+      border: 3px solid #c8d6e5;
+      border-radius: 16px;
+      padding: 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #2c3e50;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .btn-start-thema:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+      background-color: #fffaf0;
+    }
+
+    .btn-start-thema .emoji {
+      font-size: 2.5rem;
+    }
+
+    /* 2. SPEELPAGINA HEADER */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .btn-terug {
+      background: #c8d6e5;
+      color: #2c3e50;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-size: 0.95rem;
+    }
+
+    .btn-terug:hover {
+      background: #8395a7;
+      color: white;
+    }
+
+    /* Bedieningsknop (Zonder tekst) */
+    .btn-slak {
+      font-size: 1.8rem;
+      padding: 10px 25px;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform 0.1s, background-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-slak:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-slak:active {
+      transform: scale(0.95);
+    }
+
+    .btn-slak:disabled {
+      background-color: #b2bec3;
+      cursor: not-allowed;
+    }
+
+    /* Grid van 16 prenten */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      width: 100%;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 3px solid #cad3c8;
+      border-radius: 12px;
+      padding: 8px;
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s;
+      position: relative;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .card:hover {
+      border-color: #54a0ff;
+      transform: translateY(-2px);
+    }
+
+    .card img {
+      max-width: 85%;
+      max-height: 85%;
+      object-fit: contain;
+    }
+
+    .card-label {
+      display: none;
+      font-weight: bold;
+      font-size: 1rem;
+      color: #2c3e50;
+      text-align: center;
+    }
+
+    .card.correct {
+      border-color: var(--correct);
+      background-color: #e8f8f5;
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .card.correct::after {
+      content: "✓";
+      font-size: 3.5rem;
+      color: var(--correct);
+      position: absolute;
+      font-weight: bold;
+    }
+
+    /* ANIMATIE: NEE SCHUDDEN (bij fout antwoord) */
+    @keyframes schudden {
+      0% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-8px); }
+      80% { transform: translateX(8px); }
+      100% { transform: translateX(0); }
+    }
+
+    .card.fout {
+      animation: schudden 0.4s ease-in-out;
+      border-color: var(--fout-kleur) !important;
+      background-color: #fff0f0;
+    }
+
+    /* 3. KINDVRIENDELIJKE WAARSCHUWING (MODAL) */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 15px;
+    }
+
+    .modal-inhoud {
+      background: white;
+      border-radius: 24px;
+      padding: 30px 20px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      animation: popIn 0.25s ease-out;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-emoji {
+      font-size: 3.5rem;
+      margin-bottom: 10px;
+    }
+
+    .modal-titel {
+      font-size: 1.4rem;
+      color: #2c3e50;
+      margin: 0 0 10px 0;
+      font-weight: bold;
+    }
+
+    .modal-tekst {
+      color: #576574;
+      font-size: 1rem;
+      margin-bottom: 25px;
+    }
+
+    .modal-knoppen {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-modal-verder {
+      background-color: var(--correct);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 16px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-modal-verder:hover {
+      background-color: #0e9aa7;
+    }
+
+    .btn-modal-stoppen {
+      background-color: #c8d6e5;
+      color: #2c3e50;
+      border: none;
+      padding: 12px;
+      border-radius: 16px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-modal-stoppen:hover {
+      background-color: #8395a7;
+      color: white;
+    }
+
+    /* 4. RESULTATENPAGINA VOOR BEGELEIDER */
+    .score-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      width: 100%;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .score-stats {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 15px;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-val {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--accent);
+    }
+
+    .stat-lbl {
+      font-size: 0.9rem;
+      color: #576574;
+    }
+
+    .tabel-container {
+      width: 100%;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    th {
+      background-color: #f8f9fa;
+      color: #2c3e50;
+      font-weight: bold;
+    }
+
+    .status-goed {
+      color: var(--correct);
+      font-weight: bold;
+    }
+
+    .status-fout {
+      color: var(--fout-kleur);
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. BEGINPAGINA -->
+  <div id="startScherm" class="scherm">
+    <h1>Kies een thema 🐌</h1>
+    <p style="color: #576574; margin-top: -10px;">Kies een thema om te beginnen met oefenen.</p>
+    
+    <div class="thema-grid">
+      <button class="btn-start-thema" onclick="startOefening('dieren')">
+        <span class="emoji">🐱</span>
+        <span>Dieren</span>
+      </button>
+      <button class="btn-start-thema" onclick="startOefening('eten')">
+        <span class="emoji">🍎</span>
+        <span>Eten</span>
+      </button>
+      <button class="btn-start-thema" onclick="startOefening('huis')">
+        <span class="emoji">🏠</span>
+        <span>Huis</span>
+      </button>
+      <button class="btn-start-thema" onclick="startOefening('kleding')">
+        <span class="emoji">👕</span>
+        <span>Kleding</span>
+      </button>
+      <button class="btn-start-thema" onclick="startOefening('school')">
+        <span class="emoji">🎨</span>
+        <span>School</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. SPEELPAGINA -->
+  <div id="speelScherm" class="scherm" style="display: none;">
+    <div class="top-bar">
+      <button class="btn-terug" onclick="vraagBevestigingTerug()">← Kies ander thema</button>
+      <button class="btn-slak" id="btnSpeel" onclick="speelSlakkentaal()">🔊 🐌</button>
+    </div>
+
+    <!-- 4x4 Speelbord -->
+    <div class="grid" id="speelbord"></div>
+  </div>
+
+  <!-- 3. WAARSCHUWINGS-MODAL (KINDVRIENDELIJK) -->
+  <div id="modalWaarschuwing" class="modal-overlay">
+    <div class="modal-inhoud">
+      <div class="modal-emoji">🐌❓</div>
+      <h2 class="modal-titel">Wil je een ander thema kiezen?</h2>
+      <p class="modal-tekst">Als je nu stopt, ben je je score van dit spelletje kwijt.</p>
+      <div class="modal-knoppen">
+        <button class="btn-modal-verder" onclick="sluitModal()">Nee, ik wil verder spelen! ▶️</button>
+        <button class="btn-modal-stoppen" onclick="bevestigTerug()">Ja, ander thema kiezen 🚪</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. RESULTATENPAGINA VOOR BEGELEIDER -->
+  <div id="resultatenScherm" class="scherm" style="display: none;">
+    <h1>Overzicht voor de begeleider 📊</h1>
+
+    <div class="score-card">
+      <h2 id="resultaatTitel" style="margin: 0; color: #2c3e50;">Thema: Dieren</h2>
+      <div class="score-stats">
+        <div class="stat-item">
+          <span class="stat-val" id="statInEénKeer">0 / 16</span>
+          <span class="stat-lbl">In 1x goed</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-val" id="statTotaalFouten">0</span>
+          <span class="stat-lbl">Aantal fouten</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Gedetailleerd overzicht per woord:</h3>
+    <div class="tabel-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Woord</th>
+            <th>Pogingen</th>
+            <th>Fout gekozen</th>
+          </tr>
+        </thead>
+        <tbody id="tabelInhoud">
+          <!-- Dynamisch gevuld -->
+        </tbody>
+      </table>
+    </div>
+
+    <button class="btn-start-thema" style="width: 100%; flex-direction: row; justify-content: center;" onclick="toonStartScherm()">
+      <span>🔄 Nieuwe oefening kiezen</span>
+    </button>
+  </div>
+
+  <script>
+    const themaData = {
+      dieren: [
+        { id: "aap", prent: "afbeeldingen/dieren/aap.png", klanken: ["aa.mp3", "p.mp3"], tekst: ["aa", "p"] },
+        { id: "duif", prent: "afbeeldingen/dieren/duif.png", klanken: ["d.mp3", "ui.mp3", "f.mp3"], tekst: ["d", "ui", "f"] },
+        { id: "geit", prent: "afbeeldingen/dieren/geit.png", klanken: ["g.mp3", "ei.mp3", "t.mp3"], tekst: ["g", "ei", "t"] },
+        { id: "haan", prent: "afbeeldingen/dieren/haan.png", klanken: ["h.mp3", "aa.mp3", "n.mp3"], tekst: ["h", "aa", "n"] },
+        { id: "hond", prent: "afbeeldingen/dieren/hond.png", klanken: ["h.mp3", "o.mp3", "n.mp3", "t.mp3"], tekst: ["h", "o", "n", "t"] },
+        { id: "kip", prent: "afbeeldingen/dieren/kip.png", klanken: ["k.mp3", "i.mp3", "p.mp3"], tekst: ["k", "i", "p"] },
+        { id: "koe", prent: "afbeeldingen/dieren/koe.png", klanken: ["k.mp3", "oe.mp3"], tekst: ["k", "oe"] },
+        { id: "mier", prent: "afbeeldingen/dieren/mier.png", klanken: ["m.mp3", "ie.mp3", "r.mp3"], tekst: ["m", "ie", "r"] },
+        { id: "mug", prent: "afbeeldingen/dieren/mug.png", klanken: ["m.mp3", "u.mp3", "ch.mp3"], tekst: ["m", "u", "ch"] },
+        { id: "muis", prent: "afbeeldingen/dieren/muis.png", klanken: ["m.mp3", "ui.mp3", "s.mp3"], tekst: ["m", "ui", "s"] },
+        { id: "mus", prent: "afbeeldingen/dieren/mus.png", klanken: ["m.mp3", "u.mp3", "s.mp3"], tekst: ["m", "u", "s"] },
+        { id: "paard", prent: "afbeeldingen/dieren/paard.png", klanken: ["p.mp3", "aa.mp3", "r.mp3", "t.mp3"], tekst: ["p", "aa", "r", "t"] },
+        { id: "slang", prent: "afbeeldingen/dieren/slang.png", klanken: ["s.mp3", "l.mp3", "a.mp3", "ng.mp3"], tekst: ["s", "l", "a", "ng"] },
+        { id: "uil", prent: "afbeeldingen/dieren/uil.png", klanken: ["ui.mp3", "l.mp3"], tekst: ["ui", "l"] },
+        { id: "vis", prent: "afbeeldingen/dieren/vis.png", klanken: ["v.mp3", "i.mp3", "s.mp3"], tekst: ["v", "i", "s"] },
+        { id: "vlieg", prent: "afbeeldingen/dieren/vlieg.png", klanken: ["v.mp3", "l.mp3", "ie.mp3", "ch.mp3"], tekst: ["v", "l", "ie", "ch"] }
+      ],
+      eten: [
+        { id: "brood", prent: "afbeeldingen/eten/brood.png", klanken: ["b.mp3", "r.mp3", "oo.mp3", "t.mp3"], tekst: ["b", "r", "oo", "t"] },
+        { id: "friet", prent: "afbeeldingen/eten/friet.png", klanken: ["f.mp3", "r.mp3", "ie.mp3", "t.mp3"], tekst: ["f", "r", "ie", "t"] },
+        { id: "fruit", prent: "afbeeldingen/eten/fruit.png", klanken: ["f.mp3", "r.mp3", "ui.mp3", "t.mp3"], tekst: ["f", "r", "ui", "t"] },
+        { id: "ham", prent: "afbeeldingen/eten/ham.png", klanken: ["h.mp3", "a.mp3", "m.mp3"], tekst: ["h", "a", "m"] },
+        { id: "ijs", prent: "afbeeldingen/eten/ijs.png", klanken: ["ij.mp3", "s.mp3"], tekst: ["ij", "s"] },
+        { id: "kaas", prent: "afbeeldingen/eten/kaas.png", klanken: ["k.mp3", "aa.mp3", "s.mp3"], tekst: ["k", "aa", "s"] },
+        { id: "koek", prent: "afbeeldingen/eten/koek.png", klanken: ["k.mp3", "oe.mp3", "k.mp3"], tekst: ["k", "oe", "k"] },
+        { id: "noot", prent: "afbeeldingen/eten/noot.png", klanken: ["n.mp3", "oo.mp3", "t.mp3"], tekst: ["n", "oo", "t"] },
+        { id: "peer", prent: "afbeeldingen/eten/peer.png", klanken: ["p.mp3", "ee.mp3", "r.mp3"], tekst: ["p", "ee", "r"] },
+        { id: "prei", prent: "afbeeldingen/eten/prei.png", klanken: ["p.mp3", "r.mp3", "ei.mp3"], tekst: ["p", "r", "ei"] },
+        { id: "sap", prent: "afbeeldingen/eten/sap.png", klanken: ["s.mp3", "a.mp3", "p.mp3"], tekst: ["s", "a", "p"] },
+        { id: "saus", prent: "afbeeldingen/eten/saus.png", klanken: ["s.mp3", "au.mp3", "s.mp3"], tekst: ["s", "au", "s"] },
+        { id: "snoep", prent: "afbeeldingen/eten/snoep.png", klanken: ["s.mp3", "n.mp3", "oe.mp3", "p.mp3"], tekst: ["s", "n", "oe", "p"] },
+        { id: "soep", prent: "afbeeldingen/eten/soep.png", klanken: ["s.mp3", "oe.mp3", "p.mp3"], tekst: ["s", "oe", "p"] },
+        { id: "thee", prent: "afbeeldingen/eten/thee.png", klanken: ["t.mp3", "ee.mp3"], tekst: ["t", "ee"] },
+        { id: "zout", prent: "afbeeldingen/eten/zout.png", klanken: ["z.mp3", "ou.mp3", "t.mp3"], tekst: ["z", "ou", "t"] }
+      ],
+      huis: [
+        { id: "bed", prent: "afbeeldingen/huis/bed.png", klanken: ["b.mp3", "e.mp3", "t.mp3"], tekst: ["b", "e", "t"] },
+        { id: "dak", prent: "afbeeldingen/huis/dak.png", klanken: ["d.mp3", "a.mp3", "k.mp3"], tekst: ["d", "a", "k"] },
+        { id: "deur", prent: "afbeeldingen/huis/deur.png", klanken: ["d.mp3", "eu.mp3", "r.mp3"], tekst: ["d", "eu", "r"] },
+        { id: "ijs", prent: "afbeeldingen/huis/ijs.png", klanken: ["ij.mp3", "s.mp3"], tekst: ["ij", "s"] },
+        { id: "kast", prent: "afbeeldingen/huis/kast.png", klanken: ["k.mp3", "a.mp3", "s.mp3", "t.mp3"], tekst: ["k", "a", "s", "t"] },
+        { id: "lamp", prent: "afbeeldingen/huis/lamp.png", klanken: ["l.mp3", "a.mp3", "m.mp3", "p.mp3"], tekst: ["l", "a", "m", "p"] },
+        { id: "mat", prent: "afbeeldingen/huis/mat.png", klanken: ["m.mp3", "a.mp3", "t.mp3"], tekst: ["m", "a", "t"] },
+        { id: "muur", prent: "afbeeldingen/huis/muur.png", klanken: ["m.mp3", "uu.mp3", "r.mp3"], tekst: ["m", "uu", "r"] },
+        { id: "pan", prent: "afbeeldingen/huis/pan.png", klanken: ["p.mp3", "a.mp3", "n.mp3"], tekst: ["p", "a", "n"] },
+        { id: "raam", prent: "afbeeldingen/huis/raam.png", klanken: ["r.mp3", "aa.mp3", "m.mp3"], tekst: ["r", "aa", "m"] },
+        { id: "stoel", prent: "afbeeldingen/huis/stoel.png", klanken: ["s.mp3", "t.mp3", "oe.mp3", "l.mp3"], tekst: ["s", "t", "oe", "l"] },
+        { id: "trap", prent: "afbeeldingen/huis/trap.png", klanken: ["t.mp3", "r.mp3", "a.mp3", "p.mp3"], tekst: ["t", "r", "a", "p"] },
+        { id: "tuin", prent: "afbeeldingen/huis/tuin.png", klanken: ["t.mp3", "ui.mp3", "n.mp3"], tekst: ["t", "ui", "n"] },
+        { id: "uur", prent: "afbeeldingen/huis/uur.png", klanken: ["uu.mp3", "r.mp3"], tekst: ["uu", "r"] },
+        { id: "vaas", prent: "afbeeldingen/huis/vaas.png", klanken: ["v.mp3", "aa.mp3", "s.mp3"], tekst: ["v", "aa", "s"] },
+        { id: "zeep", prent: "afbeeldingen/huis/zeep.png", klanken: ["z.mp3", "ee.mp3", "p.mp3"], tekst: ["z", "ee", "p"] }
+      ],
+      kleding: [
+        { id: "broek", prent: "afbeeldingen/kleding/broek.png", klanken: ["b.mp3", "r.mp3", "oe.mp3", "k.mp3"], tekst: ["b", "r", "oe", "k"] },
+        { id: "buik", prent: "afbeeldingen/kleding/buik.png", klanken: ["b.mp3", "ui.mp3", "k.mp3"], tekst: ["b", "ui", "k"] },
+        { id: "haar", prent: "afbeeldingen/kleding/haar.png", klanken: ["h.mp3", "aa.mp3", "r.mp3"], tekst: ["h", "aa", "r"] },
+        { id: "hand", prent: "afbeeldingen/kleding/hand.png", klanken: ["h.mp3", "a.mp3", "n.mp3", "t.mp3"], tekst: ["h", "a", "n", "t"] },
+        { id: "jas", prent: "afbeeldingen/kleding/jas.png", klanken: ["j.mp3", "a.mp3", "s.mp3"], tekst: ["j", "a", "s"] },
+        { id: "kin", prent: "afbeeldingen/kleding/kin.png", klanken: ["k.mp3", "i.mp3", "n.mp3"], tekst: ["k", "i", "n"] },
+        { id: "laars", prent: "afbeeldingen/kleding/laars.png", klanken: ["l.mp3", "aa.mp3", "r.mp3", "s.mp3"], tekst: ["l", "aa", "r", "s"] },
+        { id: "mond", prent: "afbeeldingen/kleding/mond.png", klanken: ["m.mp3", "o.mp3", "n.mp3", "t.mp3"], tekst: ["m", "o", "n", "t"] },
+        { id: "mouw", prent: "afbeeldingen/kleding/mouw.png", klanken: ["m.mp3", "ou.mp3"], tekst: ["m", "ou"] },
+        { id: "neus", prent: "afbeeldingen/kleding/neus.png", klanken: ["n.mp3", "eu.mp3", "s.mp3"], tekst: ["n", "eu", "s"] },
+        { id: "oor", prent: "afbeeldingen/kleding/oor.png", klanken: ["oo.mp3", "r.mp3"], tekst: ["oo", "r"] },
+        { id: "pet", prent: "afbeeldingen/kleding/pet.png", klanken: ["p.mp3", "e.mp3", "t.mp3"], tekst: ["p", "e", "t"] },
+        { id: "rok", prent: "afbeeldingen/kleding/rok.png", klanken: ["r.mp3", "o.mp3", "k.mp3"], tekst: ["r", "o", "k"] },
+        { id: "rug", prent: "afbeeldingen/kleding/rug.png", klanken: ["r.mp3", "u.mp3", "ch.mp3"], tekst: ["r", "u", "ch"] },
+        { id: "teen", prent: "afbeeldingen/kleding/teen.png", klanken: ["t.mp3", "ee.mp3", "n.mp3"], tekst: ["t", "ee", "n"] },
+        { id: "voet", prent: "afbeeldingen/kleding/voet.png", klanken: ["v.mp3", "oe.mp3", "t.mp3"], tekst: ["v", "oe", "t"] }
+      ],
+      school: [
+        { id: "bal", prent: "afbeeldingen/school/bal.png", klanken: ["b.mp3", "a.mp3", "l.mp3"], tekst: ["b", "a", "l"] },
+        { id: "bel", prent: "afbeeldingen/school/bel.png", klanken: ["b.mp3", "e.mp3", "l.mp3"], tekst: ["b", "e", "l"] },
+        { id: "boek", prent: "afbeeldingen/school/boek.png", klanken: ["b.mp3", "oe.mp3", "k.mp3"], tekst: ["b", "oe", "k"] },
+        { id: "boot", prent: "afbeeldingen/school/boot.png", klanken: ["b.mp3", "oo.mp3", "t.mp3"], tekst: ["b", "oo", "t"] },
+        { id: "fluit", prent: "afbeeldingen/school/fluit.png", klanken: ["f.mp3", "l.mp3", "ui.mp3", "t.mp3"], tekst: ["f", "l", "ui", "t"] },
+        { id: "gum", prent: "afbeeldingen/school/gum.png", klanken: ["g.mp3", "u.mp3", "m.mp3"], tekst: ["g", "u", "m"] },
+        { id: "kar", prent: "afbeeldingen/school/kar.png", klanken: ["k.mp3", "a.mp3", "r.mp3"], tekst: ["k", "a", "r"] },
+        { id: "krijt", prent: "afbeeldingen/school/krijt.png", klanken: ["k.mp3", "r.mp3", "ij.mp3", "t.mp3"], tekst: ["k", "r", "ij", "t"] },
+        { id: "pen", prent: "afbeeldingen/school/pen.png", klanken: ["p.mp3", "e.mp3", "n.mp3"], tekst: ["p", "e", "n"] },
+        { id: "pop", prent: "afbeeldingen/school/pop.png", klanken: ["p.mp3", "o.mp3", "p.mp3"], tekst: ["p", "o", "p"] },
+        { id: "step", prent: "afbeeldingen/school/step.png", klanken: ["s.mp3", "t.mp3", "e.mp3", "p.mp3"], tekst: ["s", "t", "e", "p"] },
+        { id: "tas", prent: "afbeeldingen/school/tas.png", klanken: ["t.mp3", "a.mp3", "s.mp3"], tekst: ["t", "a", "s"] },
+        { id: "tol", prent: "afbeeldingen/school/tol.png", klanken: ["t.mp3", "o.mp3", "l.mp3"], tekst: ["t", "o", "l"] },
+        { id: "touw", prent: "afbeeldingen/school/touw.png", klanken: ["t.mp3", "ou.mp3"], tekst: ["t", "ou"] },
+        { id: "vlag", prent: "afbeeldingen/school/vlag.png", klanken: ["v.mp3", "l.mp3", "a.mp3", "ch.mp3"], tekst: ["v", "l", "a", "ch"] },
+        { id: "zee", prent: "afbeeldingen/school/zee.png", klanken: ["z.mp3", "ee.mp3"], tekst: ["z", "ee"] }
+      ]
+    };
+
+    let huidigThema = '';
+    let huidigDoel = null;
+    let overgeblevenWoorden = [];
+    let isAanHetSpelen = false;
+    let resultatenData = {}; 
+
+    // Schermen wisselen
+    function toonScherm(schermId) {
+      document.getElementById('startScherm').style.display = 'none';
+      document.getElementById('speelScherm').style.display = 'none';
+      document.getElementById('resultatenScherm').style.display = 'none';
+      document.getElementById(schermId).style.display = 'flex';
+    }
+
+    function toonStartScherm() {
+      toonScherm('startScherm');
+    }
+
+    // Modal waarschuwing beheren
+    function vraagBevestigingTerug() {
+      document.getElementById('modalWaarschuwing').style.display = 'flex';
+    }
+
+    function sluitModal() {
+      document.getElementById('modalWaarschuwing').style.display = 'none';
+    }
+
+    function bevestigTerug() {
+      sluitModal();
+      toonStartScherm();
+    }
+
+    // Shuffle-functie (Fisher-Yates)
+    function shuffleArray(array) {
+      const kopie = [...array];
+      for (let i = kopie.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [kopie[i], kopie[j]] = [kopie[j], kopie[i]];
+      }
+      return kopie;
+    }
+
+    function startOefening(themaNaam) {
+      huidigThema = themaNaam;
+      resultatenData = {};
+
+      const woordenSet = themaData[huidigThema];
+      overgeblevenWoorden = [...woordenSet];
+
+      // Initialiseer statistieken
+      woordenSet.forEach(w => {
+        resultatenData[w.id] = {
+          pogingen: 0,
+          foutGekozen: []
+        };
+      });
+
+      // Willekeurige volgorde voor het speelbord
+      const geshuffeldeWoorden = shuffleArray(woordenSet);
+      
+      const bord = document.getElementById("speelbord");
+      bord.innerHTML = "";
+
+      geshuffeldeWoorden.forEach(item => {
+        const kaart = document.createElement("div");
+        kaart.className = "card";
+        kaart.id = `card-${item.id}`;
+        kaart.onclick = () => controleerAntwoord(item.id);
+
+        kaart.innerHTML = `
+          <img src="${item.prent}" alt="${item.id}" onerror="afbeeldingFout(this, '${item.id}')">
+          <span class="card-label">${item.id}</span>
+        `;
+        bord.appendChild(kaart);
+      });
+
+      toonScherm('speelScherm');
+      kiesNieuwWoord(true);
+    }
+
+    function afbeeldingFout(imgElement, woord) {
+      imgElement.style.display = 'none';
+      const label = imgElement.nextElementSibling;
+      if (label) label.style.display = 'block';
+    }
+
+    function kiesNieuwWoord(autoSpeel = true) {
+      if (overgeblevenWoorden.length === 0) {
+        toonResultatenPage();
+        return;
+      }
+
+      const randomIndex = Math.floor(Math.random() * overgeblevenWoorden.length);
+      huidigDoel = overgeblevenWoorden[randomIndex];
+      
+      if (autoSpeel) {
+        setTimeout(speelSlakkentaal, 400);
+      }
+    }
+
+    async function speelSlakkentaal(customPauze = null) {
+      if (!huidigDoel || isAanHetSpelen) return;
+
+      const stats = resultatenData[huidigDoel.id];
+      const heeftFoutGemaakt = stats && stats.foutGekozen.length > 0;
+      
+      // Bepaal de pauze: customPauze als die is meegegeven, anders 250ms bij een eerdere fout, anders 600ms
+      let PAUZE_MS = 600;
+      if (customPauze !== null) {
+        PAUZE_MS = customPauze;
+      } else if (heeftFoutGemaakt) {
+        PAUZE_MS = 250;
+      }
+
+      isAanHetSpelen = true;
+      document.getElementById("btnSpeel").disabled = true;
+
+      try {
+        for (let i = 0; i < huidigDoel.klanken.length; i++) {
+          const mp3Pad = `audio/${huidigDoel.klanken[i]}`;
+          const succes = await speelAudioBestand(mp3Pad);
+
+          if (!succes) {
+            await speelFallbackSpraak(huidigDoel.tekst[i]);
+          }
+
+          await new Promise(r => setTimeout(r, PAUZE_MS));
+        }
+      } catch (err) {
+        console.warn("Fout bij afspelen audio:", err);
+      } finally {
+        isAanHetSpelen = false;
+        document.getElementById("btnSpeel").disabled = false;
+      }
+    }
+
+    function speelAudioBestand(pad) {
+      return new Promise((resolve) => {
+        const audio = new Audio(pad);
+        audio.play()
+          .then(() => { audio.onended = () => resolve(true); })
+          .catch(() => resolve(false));
+      });
+    }
+
+    function speelFallbackSpraak(tekst) {
+      return new Promise((resolve) => {
+        if (!('speechSynthesis' in window)) {
+          resolve();
+          return;
+        }
+
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(tekst);
+        utterance.lang = "nl-NL";
+        utterance.rate = 0.6;
+
+        let afgehandeld = false;
+        const afronden = () => {
+          if (!afgehandeld) {
+            afgehandeld = true;
+            resolve();
+          }
+        };
+
+        utterance.onend = afronden;
+        utterance.onerror = afronden;
+
+        setTimeout(afronden, 1200);
+        window.speechSynthesis.speak(utterance);
+      });
+    }
+
+    function controleerAntwoord(gekozenId) {
+      if (isAanHetSpelen || !huidigDoel) return;
+
+      const stats = resultatenData[huidigDoel.id];
+      stats.pogingen++;
+
+      if (gekozenId === huidigDoel.id) {
+        // Goed antwoord
+        document.getElementById(`card-${gekozenId}`).classList.add("correct");
+        overgeblevenWoorden = overgeblevenWoorden.filter(w => w.id !== gekozenId);
+        kiesNieuwWoord(true);
+      } else {
+        // Fout antwoord -> Nee-schudden animatie
+        if (!stats.foutGekozen.includes(gekozenId)) {
+          stats.foutGekozen.push(gekozenId);
+        }
+
+        const fouteKaart = document.getElementById(`card-${gekozenId}`);
+        fouteKaart.classList.add("fout");
+
+        // Verwijder de schud-klasse na de animatie (450ms) en speel het woord versneld opnieuw af (250ms pauze)
+        setTimeout(() => {
+          fouteKaart.classList.remove("fout");
+          speelSlakkentaal(250);
+        }, 500);
+      }
+    }
+
+    function toonResultatenPage() {
+      toonScherm('resultatenScherm');
+
+      document.getElementById("resultaatTitel").innerText = `Thema: ${huidigThema.charAt(0).toUpperCase() + huidigThema.slice(1)}`;
+
+      let inEenKeerGoed = 0;
+      let totaalFouten = 0;
+
+      const tabel = document.getElementById("tabelInhoud");
+      tabel.innerHTML = "";
+
+      Object.keys(resultatenData).forEach(woord => {
+        const d = resultatenData[woord];
+        if (d.pogingen === 1) inEenKeerGoed++;
+        totaalFouten += d.foutGekozen.length;
+
+        const tr = document.createElement("tr");
+        const statusKlasse = d.pogingen === 1 ? 'status-goed' : 'status-fout';
+        const fouteWoordenTekst = d.foutGekozen.length > 0 ? d.foutGekozen.join(", ") : "-";
+
+        tr.innerHTML = `
+          <td><strong>${woord}</strong></td>
+          <td class="${statusKlasse}">${d.pogingen}x (${d.pogingen === 1 ? '1e keer goed' : 'meerdere pogingen'})</td>
+          <td>${fouteWoordenTekst}</td>
+        `;
+        tabel.appendChild(tr);
+      });
+
+      document.getElementById("statInEénKeer").innerText = `${inEenKeerGoed} / 16`;
+      document.getElementById("statTotaalFouten").innerText = totaalFouten;
+    }
+  </script>
+</body>
+</html>
